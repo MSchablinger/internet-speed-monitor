@@ -5,7 +5,7 @@ get_download_speed() {
     speedtest-cli --secure --no-upload | grep -oP 'Download: \K[\d.]+'
 }
 
-# Log file for gnuplot data
+# Log file for data
 log_file="speed.log"
 
 # Initialize log file with headers (only if it doesn't exist)
