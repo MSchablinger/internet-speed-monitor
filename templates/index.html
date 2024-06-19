@@ -13,6 +13,7 @@
         <input type="datetime-local" id="startDate">
         <input type="datetime-local" id="endDate">
         <button onclick="updateChart()">Update Chart</button>
+        <button onclick="setLast24Hours()">Last 24 Hours</button>
         <canvas id="speedChart"></canvas>
     </div>
     <script>
@@ -75,6 +76,14 @@
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             fetchData(startDate, endDate).then(renderChart);
+        }
+
+        function setLast24Hours() {
+            const endDate = moment().format('YYYY-MM-DDTHH:mm');
+            const startDate = moment().subtract(24, 'hours').format('YYYY-MM-DDTHH:mm');
+            document.getElementById('startDate').value = startDate;
+            document.getElementById('endDate').value = endDate;
+            updateChart();
         }
 
         // Initial load
