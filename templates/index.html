@@ -10,44 +10,75 @@
 </head>
 <body>
     <div style="width: 80%; margin: auto;">
+        <input type="datetime-local" id="startDate">
+        <input type="datetime-local" id="endDate">
+        <button onclick="updateChart()">Update Chart</button>
         <canvas id="speedChart"></canvas>
     </div>
     <script>
-        fetch('/data')
-            .then(response => response.json())
-            .then(data => {
-                const labels = data.map(point => point.date);
-                const speeds = data.map(point => point.speed);
+        let chart;
 
-                const ctx = document.getElementById('speedChart').getContext('2d');
-                const chart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Download Speed (Mbps)',
-                            data: speeds,
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'minute',
-				    stepSize: 10
-                                }
-                            },
-                            y: {
-                                beginAtZero: true
+        function fetchData(startDate, endDate) {
+            return fetch('/data')
+                .then(response => response.json())
+                .then(data => {
+                    if (startDate && endDate) {
+                        const start = moment(startDate);
+                        const end = moment(endDate);
+                        data = data.filter(point => {
+                            const date = moment(point.date);
+                            return date.isBetween(start, end);
+                        });
+                    }
+                    return data;
+                });
+        }
+
+        function renderChart(data) {
+            const labels = data.map(point => point.date);
+            const speeds = data.map(point => point.speed);
+
+            const ctx = document.getElementById('speedChart').getContext('2d');
+            if (chart) {
+                chart.destroy();
+            }
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Download Speed (Mbps)',
+                        data: speeds,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute',
+                                stepSize: 10
                             }
+                        },
+                        y: {
+                            beginAtZero: true
                         }
                     }
-                });
+                }
             });
+        }
+
+        function updateChart() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            fetchData(startDate, endDate).then(renderChart);
+        }
+
+        // Initial load
+        fetchData().then(renderChart);
     </script>
 </body>
 </html>
